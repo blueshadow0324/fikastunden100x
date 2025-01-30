@@ -5,7 +5,7 @@ import nodemailer from "nodemailer"
 import path from "path";
 import { fileURLToPath } from "url";
 
-const port = process.env.PORT || 3000; // Use Render's assigned port or default to 3000 locally
+const port = process.env.PORT || 11000; // Use Render's assigned port or default to 3000 locally
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
