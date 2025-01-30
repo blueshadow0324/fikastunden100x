@@ -9,4 +9,5 @@
   "private": true
   "dependicies": {
     "express": "^4.18.2"
+ }
 }
