@@ -1,49 +1,40 @@
 import express from "express";
-const app = express();
 import cors from "cors";
-import nodemailer from "nodemailer"
+import nodemailer from "nodemailer";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const port = process.env.PORT || 3000; // Use Render's assigned port or default to 3000 locally
+const app = express();
+const port = process.env.PORT || 3000; // ✅ Use Render's assigned port
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
-
+// ✅ Get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename); // ✅ This mimics __dirname in CommonJS
+const __dirname = path.dirname(__filename);
 
+// ✅ Middleware
+app.use(cors());
+app.use(express.json()); // Parse JSON request bodies
 
 // ✅ Serve index.html as the default page
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-});
-
-// Middleware
-app.use(cors());
-app.use(express.json()); // Parse JSON request bodies
-
-// Update this configuration with your SMTP provider details
+// ✅ Use environment variables for credentials (avoid hardcoding passwords!)
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com", // Gmail SMTP server
-    port: 587, // Use 465 for SSL or 587 for TLS
-    secure: false, // True for SSL (port 465), false for TLS (port 587)
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
     auth: {
-        user: "fikastundenmail@gmail.com", // Your full email address
-        pass: "vahg prno zjax sqfc", // Replace with your actual app password
+        user: process.env.EMAIL_USER,  // ✅ Use env variable
+        pass: process.env.EMAIL_PASS,  // ✅ Use env variable
     },
 });
 
-// POST /send-order endpoint
+// ✅ POST /send-order endpoint
 app.post("/send-order", (req, res) => {
     const { name, address, postcode, city, orderDetails } = req.body;
 
-    // Basic validation
     if (!name || !address || !postcode || !city || !orderDetails) {
         return res.status(400).json({ message: "All fields are required." });
     }
@@ -53,26 +44,22 @@ app.post("/send-order", (req, res) => {
         return res.status(400).json({ message: "Invalid postcode." });
     }
 
-    // Prepare email details
     const mailOptions = {
-        from: "fikastundenmail@gmail.com", // Your email address
-        to: "fikastundenmail@gmail.com", // The same or a different email where you receive orders
+        from: fikastundenmail@gmail.com,  // ✅ Secure email sender
+        to: fikastundenmail@gmail.com,    // ✅ Secure email receiver
         subject: `New Order from ${name}`,
         text: `
-      You received a new order:
-      
-      Name: ${name}
-      Address: ${address}
-      Postcode: ${postcode}
-      City: ${city}
-      Order Details:
-      ${orderDetails}
-
-      Total Items: ${orderDetails.length}
-    `,
+        You received a new order:
+        Name: ${name}
+        Address: ${address}
+        Postcode: ${postcode}
+        City: ${city}
+        Order Details:
+        ${orderDetails}
+        Total Items: ${orderDetails.length}
+        `,
     };
 
-    // Send email using Nodemailer
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             console.error("Error sending email:", error);
@@ -82,4 +69,9 @@ app.post("/send-order", (req, res) => {
         console.log("Email sent:", info.response);
         res.status(200).json({ message: "Order received and email sent successfully!" });
     });
+});
+
+// ✅ Keep only one `app.listen()`
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });
